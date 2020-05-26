@@ -27,16 +27,20 @@ Framebuf::~Framebuf() {
     }
 }
 
-char* Framebuf::Fb() {
-    return fb;
-}
-
-int Framebuf::Index(int x, int y) {
+int Framebuf::Index(int x, int y) const {
     return (x + var_info.xoffset) * (var_info.bits_per_pixel / 8) +
            (y + var_info.yoffset) * fix_info.line_length;
 }
 
+char *&Framebuf::Fb() {
+    return fb;
+}
+
 void Framebuf::Set(int x, int y, Color color) {
+    if (flip_y) {
+        y = var_info.yres - y;
+    }
+
     int index = Index(x, y);
 
     // Linux framebuffer is in BGR format for some reason
@@ -44,6 +48,10 @@ void Framebuf::Set(int x, int y, Color color) {
     operator[](index + 1) = color.g;
     operator[](index + 2) = color.r;
     operator[](index + 3) = color.a;
+}
+
+void Framebuf::FlipY(bool flip) {
+    flip_y = flip;
 }
 
 char& Framebuf::operator[](int index) {

@@ -15,6 +15,8 @@ private:
     struct fb_fix_screeninfo fix_info;
     int size;
 
+    bool flip_y = true;
+
     void LoadFd();
     void LoadInfo();
     void MmapFb();
@@ -23,9 +25,11 @@ public:
     Framebuf();
     ~Framebuf();
 
-    char* Fb();
-    int Index(int x, int y);
+    int Index(int x, int y) const;
+
+    char *&Fb();
     void Set(int x, int y, Color color);
+    void FlipY(bool flip);
 
     char& operator[](int index);
 };
