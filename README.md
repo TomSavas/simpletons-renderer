@@ -2,6 +2,8 @@
 Simplistic software renderer that works directly on Linux framebuffer.
 This is basically just me following 
 [this wonderful repo](https://github.com/ssloy/tinyrenderer) as a guide.
+`tgaimage` and (most of) `model` implementations are taken directly from that repo.
+I plan on redoing the model myself sometime later.
 
 ## Running
 This is written with Linux in mind, so it will not work on Windows and most likely
