@@ -11,8 +11,6 @@ private:
     Framebuf fb;
 
     void DrawLine(int x0, int y0, int x1, int y1, Color color);
-    void DrawTriangleLineSweep(Vec3f t0, Vec3f t1, Vec3f t2, Color color);
-    void DrawTriangleBarycentric(Vec3f t0, Vec3f t1, Vec3f t2, Color color);
 
 public:
     Renderer();

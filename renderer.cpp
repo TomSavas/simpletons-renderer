@@ -38,51 +38,14 @@ void Renderer::DrawLine(Vec3f v0, Vec3f v1, Color color) {
     DrawLine(v0.x, v0.y, v1.x, v1.y, color);
 }
 
-void Renderer::DrawTriangleLineSweep(Vec3f v0, Vec3f v1, Vec3f v2, Color color) {
-    // v0 - highest y value, v2 - lowest
-    if (v0.y < v1.y) std::swap(v0, v1);
-    if (v0.y < v2.y) std::swap(v0, v2);
-    if (v1.y < v2.y) std::swap(v1, v2);
-
-    Vec3f red = v0 - v2;
-    Vec3f green = v1 - v2;
-
-    int y;
-    for (y = 0; y < green.y; y++) {
-        if (green.y == 0) break;
-
-        float red_percentage = std::abs((float) y / red.y);
-        float green_percentage = std::abs((float) y / green.y);
-
-        Vec3f red_point = v2 + red * red_percentage;
-        Vec3f green_point = v2 + green * green_percentage;
-
-        DrawLine(red_point, green_point, color);
-    }
-
-    Vec3f old_green = green;
-    green = v0 - v1;
-    for (; y <= green.y + old_green.y; y++) {
-        if (green.y == 0) break;
-
-        float red_percentage = std::abs((float) y / red.y);
-        float green_percentage = std::abs(((float) (y - v1.y + v2.y)) / green.y);
-        
-        Vec3f red_point = v2 + red * red_percentage;
-        Vec3f green_point = v1 + green * green_percentage;
-
-        DrawLine(red_point, green_point, color);
-    }
-}
-
-void Renderer::DrawTriangleBarycentric(Vec3f v0, Vec3f v1, Vec3f v2, Color color) {
+void Renderer::DrawTriangle(Vec3f v0, Vec3f v1, Vec3f v2, Color color) {
     float min_x = std::min(v0.x, std::min(v1.x, v2.x));
     float min_y = std::min(v0.y, std::min(v1.y, v2.y));
 
     float max_x = std::max(v0.x, std::max(v1.x, v2.x));
     float max_y = std::max(v0.y, std::max(v1.y, v2.y));
 
-    // Could do binary search on x to see where the triangle starts
+    // Could do binary search on x to see where the triangle starts if the image is bigger than say 64?
     for (int y = min_y; y <= max_y; y++) {
         bool drawing_triangle = false;
 
@@ -90,35 +53,30 @@ void Renderer::DrawTriangleBarycentric(Vec3f v0, Vec3f v1, Vec3f v2, Color color
             Vec3f point(x, y);
             Vec3f barycentric = point.Barycentric(v0, v1, v2);
 
-            printf("bary x: %f, y: %f, z: %f\n", barycentric.x, barycentric.y, barycentric.z);
             if (barycentric.x < 0 || barycentric.y < 0 || barycentric.z < 0) {
-                //if (drawing_triangle)
-                //    break;
+                // If we are already drawing a triangle and we stepped out of it
+                // we won't be drawing it again on this line.
+                if (drawing_triangle)
+                    break;
+
                 continue;
             }
-
-            printf("x: %d, y: %d\n\n", x, y);
-
             drawing_triangle = true;
 
-            fb.Set(x, y, Color(255, 255, 255, 0));
+            fb.Set(x, y, color);
         }
     }
-}
-
-void Renderer::DrawTriangle(Vec3f t0, Vec3f t1, Vec3f t2, Color color) {
-    DrawTriangleLineSweep(t0, t1, t2, color);
 }
 
 void Renderer::DrawModel(const Model &model, Vec3f insertion_point, float scale) {
     Vec3f offset = Vec3f(400, 50, 0);
     Vec3f light_dir(0, 0, -1);
-    for (int i = 0; i < model.FaceCount(); i++) {
-        std::vector<int> face = model.Face(i);
 
-        Vec3f v0 = ((Vec3f::One() + model.Vert(face[0])) * scale).TruncateCoeffs() + insertion_point;
-        Vec3f v1 = ((Vec3f::One() + model.Vert(face[1])) * scale).TruncateCoeffs() + insertion_point;
-        Vec3f v2 = ((Vec3f::One() + model.Vert(face[2])) * scale).TruncateCoeffs() + insertion_point;
+    for (int i = 0; i < model.FaceCount(); i++) {
+        std::vector<int> *face = model.Face(i);
+        Vec3f v0 = ((Vec3f::One() + model.Vert(face->operator[](0))) * scale).TruncateCoeffs() + insertion_point;
+        Vec3f v1 = ((Vec3f::One() + model.Vert(face->operator[](1))) * scale).TruncateCoeffs() + insertion_point;
+        Vec3f v2 = ((Vec3f::One() + model.Vert(face->operator[](2))) * scale).TruncateCoeffs() + insertion_point;
 
         // Simple lighting
         Vec3f triangle_normal = (v2 - v0).Cross(v1 - v0).Normalize();
