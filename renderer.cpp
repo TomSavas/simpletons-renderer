@@ -142,10 +142,8 @@ void Renderer::DrawModel(const Model &model, TGAImage &tex, Vec3f insertion_poin
         // Simple lighting
         Vec3f triangle_normal = (v2 - v0).Cross(v1 - v0).Normalize();
         float lighting_intensity = triangle_normal.Dot(light_dir);
-        if (lighting_intensity < 0) continue;
-        //Color color(lighting_intensity * 255, lighting_intensity * 255, lighting_intensity * 255, 0);
-        //
-        //DrawTriangle(v0, v1, v2, color);
+        if (lighting_intensity < 0) 
+            continue;
 
         DrawTriangle(v0, v1, v2, uv0, uv1, uv2, lighting_intensity, tex);
     }
