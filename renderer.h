@@ -9,6 +9,9 @@
 class Renderer {
 private:
     Framebuf fb;
+    std::vector<float> *z_buf;
+
+    int ZBufIndex(int x, int y) const;
 
     void DrawLine(int x0, int y0, int x1, int y1, Color color);
 

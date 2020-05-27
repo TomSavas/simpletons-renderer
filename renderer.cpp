@@ -1,9 +1,16 @@
 #include <stdlib.h>
 #include <algorithm>
+#include <limits>
 
 #include "renderer.h"
 
-Renderer::Renderer() : fb() {}
+Renderer::Renderer() : fb() {
+    z_buf = new std::vector<float>(fb.Width() * fb.Height(), -std::numeric_limits<float>::max());
+}
+
+int Renderer::ZBufIndex(int x, int y) const {
+    return x + y * fb.Height();
+}
 
 void Renderer::DrawLine(int x0, int y0, int x1, int y1, Color color) {
     int x_diff = x1 - x0;
@@ -63,7 +70,12 @@ void Renderer::DrawTriangle(Vec3f v0, Vec3f v1, Vec3f v2, Color color) {
             }
             drawing_triangle = true;
 
-            fb.Set(x, y, color);
+            float point_z = barycentric.x * v0.z + barycentric.y * v1.z + barycentric.z * v2.z;
+            int z_buf_index = ZBufIndex(x, y);
+            if (point.z > z_buf->operator[](z_buf_index)) {
+                z_buf->operator[](z_buf_index) = point_z;
+                fb.Set(x, y, color);
+            }
         }
     }
 }
@@ -74,9 +86,12 @@ void Renderer::DrawModel(const Model &model, Vec3f insertion_point, float scale)
 
     for (int i = 0; i < model.FaceCount(); i++) {
         std::vector<int> *face = model.Face(i);
-        Vec3f v0 = ((Vec3f::One() + model.Vert(face->operator[](0))) * scale).TruncateCoeffs() + insertion_point;
-        Vec3f v1 = ((Vec3f::One() + model.Vert(face->operator[](1))) * scale).TruncateCoeffs() + insertion_point;
-        Vec3f v2 = ((Vec3f::One() + model.Vert(face->operator[](2))) * scale).TruncateCoeffs() + insertion_point;
+        Vec3f v0 = ((Vec3f::One() + model.Vert(face->operator[](0))) * scale)
+            .TruncateCoeffs() + insertion_point;
+        Vec3f v1 = ((Vec3f::One() + model.Vert(face->operator[](1))) * scale)
+            .TruncateCoeffs() + insertion_point;
+        Vec3f v2 = ((Vec3f::One() + model.Vert(face->operator[](2))) * scale)
+            .TruncateCoeffs() + insertion_point;
 
         // Simple lighting
         Vec3f triangle_normal = (v2 - v0).Cross(v1 - v0).Normalize();

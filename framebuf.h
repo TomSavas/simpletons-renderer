@@ -26,6 +26,8 @@ public:
     ~Framebuf();
 
     int Index(int x, int y) const;
+    int Width() const;
+    int Height() const;
 
     char *&Fb();
     void Set(int x, int y, Color color);

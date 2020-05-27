@@ -32,6 +32,14 @@ int Framebuf::Index(int x, int y) const {
            (y + var_info.yoffset) * fix_info.line_length;
 }
 
+int Framebuf::Width() const {
+    return var_info.yres;
+}
+
+int Framebuf::Height() const {
+    return var_info.xres;
+}
+
 char *&Framebuf::Fb() {
     return fb;
 }
