@@ -8,7 +8,8 @@
 // Will redo in the nearest future
 Model::Model(const char *filepath) {
     vertices = new std::vector<Vec3f>();
-    faces = new std::vector<std::vector<int>*>();
+    uvs = new std::vector<Vec3f>();
+    faces = new std::vector<std::vector<FaceIndices>*>();
     float max_value = 1;
 
     std::ifstream in;
@@ -29,13 +30,27 @@ Model::Model(const char *filepath) {
             max_value = std::max(max_value, std::max(vertex.x, std::max(vertex.y, vertex.z)));
 
             vertices->push_back(vertex);
-        } else if (!line.compare(0, 2, "f ")) {
-            std::vector<int> *f = new std::vector<int>();
-            int itrash, idx;
+        } else if (!line.compare(0, 3, "vt ")) {
+            iss >> trash >> trash;
+            Vec3f uv;
+
+            iss >> uv.x;
+            iss >> uv.y;
             iss >> trash;
-            while (iss >> idx >> trash >> itrash >> trash >> itrash) {
-                idx--; // in wavefront obj all indices start at 1, not zero
-                f->push_back(idx);
+
+            uvs->push_back(uv);
+        } else if (!line.compare(0, 2, "f ")) {
+            std::vector<FaceIndices> *f = new std::vector<FaceIndices>();
+            FaceIndices face_indices;
+            iss >> trash;
+            while (iss >> face_indices.vertex_index >> trash 
+                    >> face_indices.uv_index >> trash >> face_indices.normal_index) {
+                // in wavefront obj all indices start at 1, not zero
+                face_indices.vertex_index--;
+                face_indices.uv_index--;
+                face_indices.normal_index--;
+
+                f->push_back(face_indices);
             }
             faces->push_back(f);
         }
@@ -45,7 +60,6 @@ Model::Model(const char *filepath) {
         (*vertices)[i] = Vec3f((*vertices)[i].x / max_value + 1, 
                 (*vertices)[i].y / max_value + 1,
                 (*vertices)[i].z / max_value + 1);
-
     }
 
     std::cerr << "# v# " << vertices->size() << " f# "  << faces->size() << std::endl;
@@ -69,10 +83,14 @@ int Model::FaceCount() const {
     return faces->size();
 }
 
+Vec3f Model::Uv(int index) const {
+    return uvs->operator[](index);
+}
+
 Vec3f Model::Vert(int index) const {
     return vertices->operator[](index);
 }
 
-std::vector<int> *Model::Face(int index) const {
+std::vector<FaceIndices> *Model::Face(int index) const {
     return faces->operator[](index);
 }
