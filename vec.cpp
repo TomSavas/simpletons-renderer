@@ -40,7 +40,7 @@ Vec3f Vec3f::Barycentric(const Vec3f &a, const Vec3f &b, const Vec3f &c) const {
     // [u, v, 1]
     Vec3f barycentric = Vec3f(ab.x, ac.x, pa.x).Cross(Vec3f(ab.y, ac.y, pa.y));
 
-    return Vec3f((1 - barycentric.x - barycentric.y) / barycentric.z,
+    return Vec3f(1.0 - (barycentric.x + barycentric.y) / barycentric.z,
             barycentric.x / barycentric.z,
             barycentric.y / barycentric.z);
 }
