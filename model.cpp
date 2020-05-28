@@ -23,19 +23,19 @@ Model::Model(const char *filepath) {
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
             Vec3f vertex;
-            iss >> vertex.x;
-            iss >> vertex.y;
-            iss >> vertex.z;
+            iss >> vertex.X();
+            iss >> vertex.Y();
+            iss >> vertex.Z();
 
-            max_value = std::max(max_value, std::max(vertex.x, std::max(vertex.y, vertex.z)));
+            max_value = std::max(max_value, std::max(vertex.X(), std::max(vertex.Y(), vertex.Z())));
 
             vertices->push_back(vertex);
         } else if (!line.compare(0, 3, "vt ")) {
             iss >> trash >> trash;
             Vec3f uv;
 
-            iss >> uv.x;
-            iss >> uv.y;
+            iss >> uv.X();
+            iss >> uv.Y();
             iss >> trash;
 
             uvs->push_back(uv);
@@ -57,9 +57,9 @@ Model::Model(const char *filepath) {
     }
 
     for (int i = 0; i < vertices->size(); i++) {
-        (*vertices)[i] = Vec3f((*vertices)[i].x / max_value + 1, 
-                (*vertices)[i].y / max_value + 1,
-                (*vertices)[i].z / max_value + 1);
+        (*vertices)[i] = Vec3f((*vertices)[i].X() / max_value + 1, 
+                (*vertices)[i].Y() / max_value + 1,
+                (*vertices)[i].Z() / max_value + 1);
     }
 
     std::cerr << "# v# " << vertices->size() << " f# "  << faces->size() << std::endl;
