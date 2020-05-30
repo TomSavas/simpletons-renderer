@@ -13,7 +13,7 @@ typedef struct {
 
 class Model {
 private:
-    std::vector<Vec3f> *vertices;
+    std::vector<Vec4f> *vertices;
     std::vector<Vec3f> *uvs;
     std::vector<std::vector<FaceIndices>*> *faces;
 
@@ -25,7 +25,7 @@ public:
     int FaceCount() const;
 
     Vec3f Uv(int index) const;
-    Vec3f Vert(int index) const;
+    Vec4f Vert(int index) const;
     std::vector<FaceIndices> *Face(int index) const;
 };
 

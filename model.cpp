@@ -7,7 +7,7 @@
 // Stolen directly from https://github.com/ssloy/tinyrenderer
 // Will redo in the nearest future
 Model::Model(const char *filepath) {
-    vertices = new std::vector<Vec3f>();
+    vertices = new std::vector<Vec4f>();
     uvs = new std::vector<Vec3f>();
     faces = new std::vector<std::vector<FaceIndices>*>();
     float max_value = 1;
@@ -22,10 +22,11 @@ Model::Model(const char *filepath) {
         char trash;
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
-            Vec3f vertex;
+            Vec4f vertex;
             iss >> vertex.X();
             iss >> vertex.Y();
             iss >> vertex.Z();
+            vertex.W() = 1.0;
 
             max_value = std::max(max_value, std::max(vertex.X(), std::max(vertex.Y(), vertex.Z())));
 
@@ -56,12 +57,6 @@ Model::Model(const char *filepath) {
         }
     }
 
-    for (int i = 0; i < vertices->size(); i++) {
-        (*vertices)[i] = Vec3f((*vertices)[i].X() / max_value + 1, 
-                (*vertices)[i].Y() / max_value + 1,
-                (*vertices)[i].Z() / max_value + 1);
-    }
-
     std::cerr << "# v# " << vertices->size() << " f# "  << faces->size() << std::endl;
 }
 
@@ -87,7 +82,7 @@ Vec3f Model::Uv(int index) const {
     return uvs->operator[](index);
 }
 
-Vec3f Model::Vert(int index) const {
+Vec4f Model::Vert(int index) const {
     return vertices->operator[](index);
 }
 
