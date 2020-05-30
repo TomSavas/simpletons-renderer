@@ -74,8 +74,7 @@ void Renderer::DrawTriangle(Vec4f v0, Vec4f v1, Vec4f v2, Vec3f uv0, Vec3f uv1, 
             if (x < 0 || x >= fb.Width())
                 continue;
 
-            Vec3f point(x, y);
-            Vec3f barycentric = point.Barycentric(v0.To<Vec3f, 3>(), v1.To<Vec3f, 3>(), v2.To<Vec3f, 3>());
+            Vec3f barycentric = Vec3f(x, y).Barycentric(v0.To<Vec3f, 3>(), v1.To<Vec3f, 3>(), v2.To<Vec3f, 3>());
 
             if (barycentric.X() < 0 || barycentric.Y() < 0 || barycentric.Z() < 0) {
                 // If we are already drawing a triangle and we stepped out of it
@@ -95,10 +94,10 @@ void Renderer::DrawTriangle(Vec4f v0, Vec4f v1, Vec4f v2, Vec3f uv0, Vec3f uv1, 
             TGAColor tga_color = tex.get(u, v) * lighting_intensity;
             Color color(tga_color);
 
-            float point_z = barycentric.X() * v0.Z() + barycentric.Y() * v1.Z() + barycentric.Z() * v2.Z();
+            float z = barycentric.X() * v0.Z() + barycentric.Y() * v1.Z() + barycentric.Z() * v2.Z();
             int z_buf_index = ZBufIndex(x, y);
-            if (point.Z() > z_buf->operator[](z_buf_index)) {
-                z_buf->operator[](z_buf_index) = point_z;
+            if (z > z_buf->operator[](z_buf_index)) {
+                z_buf->operator[](z_buf_index) = z;
                 fb.Set(x, y, color);
             }
         }
