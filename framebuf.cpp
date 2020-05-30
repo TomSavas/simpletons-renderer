@@ -13,6 +13,8 @@ Framebuf::Framebuf() {
     LoadFd();
     LoadInfo();
     MmapFb();
+
+    CalculateViewportMatrix();
 }
 
 Framebuf::~Framebuf() {
@@ -33,20 +35,33 @@ int Framebuf::Index(int x, int y) const {
 }
 
 int Framebuf::Width() const {
-    return var_info.yres;
+    return var_info.xres;
 }
 
 int Framebuf::Height() const {
-    return var_info.xres;
+    return var_info.yres;
+}
+
+const Mat4f &Framebuf::ViewportMatrix() const {
+    return viewport_matrix;
 }
 
 char *&Framebuf::Fb() {
     return fb;
 }
 
+void Framebuf::FlipY(bool flip) {
+    flip_y = flip;
+}
+
 void Framebuf::Set(int x, int y, Color color) {
+    if (x < 0 || y < 0 || x >= var_info.xres || y >= var_info.yres) {
+        fprintf(stderr, "Invalid write to fb at x: %d, y: %d\n", x, y);
+        return;
+    }
+
     if (flip_y) {
-        y = var_info.yres - y;
+        y = var_info.yres - 1 - y;
     }
 
     int index = Index(x, y);
@@ -58,8 +73,10 @@ void Framebuf::Set(int x, int y, Color color) {
     operator[](index + 3) = color.a;
 }
 
-void Framebuf::FlipY(bool flip) {
-    flip_y = flip;
+void Framebuf::Clear(Color color) {
+    for (int y = 0; y < Height(); y++) 
+        for (int x = 0; x < Width(); x++)
+            Set(x, y, color);
 }
 
 char& Framebuf::operator[](int index) {
@@ -88,4 +105,20 @@ void Framebuf::MmapFb() {
 
     if ((intptr_t) fb == -1)
         throw std::runtime_error(strerror(errno));
+}
+
+void Framebuf::CalculateViewportMatrix() {
+    // Translate from unit cube into viewport
+    Mat4f translation = Mat4f::Identity();
+    translation[0][3] = (Width() - 1) / 2.0;
+    translation[1][3] = (Height() - 1) / 2.0;
+    translation[2][3] = 0.5;
+
+    // Scale to viewport dimensions
+    Mat4f scaling = Mat4f::Identity();
+    scaling[0][0] = (Width() - 1) / 2.0;
+    scaling[1][1] = (Height() - 1) / 2.0;
+    scaling[2][2] = 0.5;
+
+    viewport_matrix = translation * scaling;
 }
