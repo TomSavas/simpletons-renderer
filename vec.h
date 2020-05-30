@@ -205,6 +205,10 @@ public:
         this->values[3] = w;
     };
 
+    Vec4<T> ProjectTo3d() const {
+        return Vec4<T>(X() / W(), Y() / W(), Z() / W(), 1);
+    }
+
     T &X() { return this->values[0]; }
     const T &X() const { return this->values[0]; }
 
