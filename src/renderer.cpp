@@ -3,7 +3,7 @@
 #include <limits>
 
 #include "renderer.h"
-#include "matrix.h"
+#include "matrix.hpp"
 
 Renderer::Renderer(Mat4f projection_mat, Mat4f view_mat) : fb(), projection(projection_mat), view(view_mat) {
     z_buf = new std::vector<float>(fb.Width() * fb.Height(), -std::numeric_limits<float>::max());

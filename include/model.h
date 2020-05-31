@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "vec.h"
+#include "vec.hpp"
 
 typedef struct {
     int vertex_index;

@@ -1,8 +1,8 @@
 #ifndef VEC_H
 #define VEC_H
 
-#include <string>
 #include <cmath>
+#include <string>
 
 template<typename VecImpl, int N, typename T>
 class VecBase {

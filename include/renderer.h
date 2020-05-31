@@ -1,12 +1,13 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "matrix.hpp"
+#include "vec.hpp"
+
 #include "framebuf.h"
-#include "vec.h"
 #include "color.h"
 #include "model.h"
 #include "tgaimage.h"
-#include "matrix.h"
 
 class Renderer {
 private:

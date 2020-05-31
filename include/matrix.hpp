@@ -4,7 +4,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "vec.h"
+#include "vec.hpp"
 
 template<int Y_DIM, int X_DIM, typename T>
 class Matrix {

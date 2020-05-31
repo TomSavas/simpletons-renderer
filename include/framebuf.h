@@ -3,8 +3,9 @@
 
 #include <linux/fb.h>
 
+#include "matrix.hpp"
+
 #include "color.h"
-#include "matrix.h"
 
 #define FB_ERR_PREFIX "FRAMEBUF ERROR"
 
