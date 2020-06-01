@@ -9,7 +9,8 @@
 Model::Model(const char *filepath) {
     vertices = new std::vector<Vec4f>();
     uvs = new std::vector<Vec3f>();
-    faces = new std::vector<std::vector<FaceIndices>*>();
+    normals = new std::vector<Vec3f>();
+    faces = new std::vector<std::vector<FaceInfoIndices>*>();
     float max_value = 1;
 
     std::ifstream in;
@@ -40,18 +41,27 @@ Model::Model(const char *filepath) {
             iss >> trash;
 
             uvs->push_back(uv);
-        } else if (!line.compare(0, 2, "f ")) {
-            std::vector<FaceIndices> *f = new std::vector<FaceIndices>();
-            FaceIndices face_indices;
-            iss >> trash;
-            while (iss >> face_indices.vertex_index >> trash 
-                    >> face_indices.uv_index >> trash >> face_indices.normal_index) {
-                // in wavefront obj all indices start at 1, not zero
-                face_indices.vertex_index--;
-                face_indices.uv_index--;
-                face_indices.normal_index--;
+        } else if (!line.compare(0, 3, "vn ")) {
+            iss >> trash >> trash;
+            Vec3f normal;
 
-                f->push_back(face_indices);
+            iss >> normal.X();
+            iss >> normal.Y();
+            iss >> normal.Z();
+
+            normals->push_back(normal);
+        } else if (!line.compare(0, 2, "f ")) {
+            std::vector<FaceInfoIndices> *f = new std::vector<FaceInfoIndices>();
+            FaceInfoIndices face_info_indices;
+            iss >> trash;
+            while (iss >> face_info_indices.vertex_index >> trash 
+                    >> face_info_indices.uv_index >> trash >> face_info_indices.normal_index) {
+                // in wavefront obj all indices start at 1, not zero
+                face_info_indices.vertex_index--;
+                face_info_indices.uv_index--;
+                face_info_indices.normal_index--;
+
+                f->push_back(face_info_indices);
             }
             faces->push_back(f);
         }
@@ -78,14 +88,36 @@ int Model::FaceCount() const {
     return faces->size();
 }
 
-Vec3f Model::Uv(int index) const {
-    return uvs->operator[](index);
-}
-
 Vec4f Model::Vert(int index) const {
     return vertices->operator[](index);
 }
 
-std::vector<FaceIndices> *Model::Face(int index) const {
-    return faces->operator[](index);
+Vec3f Model::Uv(int index) const {
+    return uvs->operator[](index);
+}
+
+Vec3f Model::Normal(int index) const {
+    return normals->operator[](index);
+}
+
+const std::vector<FaceInfoIndices> &Model::FaceIndices(int index) const {
+    return *faces->operator[](index);
+}
+
+FaceInfo Model::Face(int index) const {
+    std::vector<FaceInfoIndices> face_indices = FaceIndices(index);
+
+    return FaceInfo {
+        .v0 = Vert(face_indices[0].vertex_index),
+        .v1 = Vert(face_indices[1].vertex_index),
+        .v2 = Vert(face_indices[2].vertex_index),
+
+        .uv0 = Uv(face_indices[0].uv_index),
+        .uv1 = Uv(face_indices[1].uv_index),
+        .uv2 = Uv(face_indices[2].uv_index),
+
+        .n0 = Normal(face_indices[0].uv_index),
+        .n1 = Normal(face_indices[1].uv_index),
+        .n2 = Normal(face_indices[2].uv_index)
+    };
 }
