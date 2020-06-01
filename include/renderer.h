@@ -4,9 +4,10 @@
 #include "matrix.hpp"
 #include "vec.hpp"
 
-#include "framebuf.h"
 #include "color.h"
+#include "framebuf.h"
 #include "model.h"
+#include "shader.h"
 #include "tgaimage.h"
 
 class Renderer {
@@ -24,8 +25,8 @@ public:
     Renderer(Mat4f projection_mat, Mat4f view_mat);
 
     void DrawLine(Vec4f line_start, Vec4f line_end, Color color);
-    void DrawTriangle(Vec4f t0, Vec4f t1, Vec4f t2, Vec3f uv0, Vec3f uv1, Vec3f uv2,
-            float lighting_intensity, TGAImage &tex);
+    void DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
+        const std::vector<FaceInfoIndices> &face_indices, const FaceInfo &face, TGAImage &tex);
     void DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat);
 
     void DrawAxes();

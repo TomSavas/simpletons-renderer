@@ -9,7 +9,7 @@ typedef struct Color {
     unsigned char b = 0;
     unsigned char a = 0;
 
-    Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) :
+    Color(unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 0) :
         r(r), g(g), b(b), a(a) {}
 
     Color(TGAColor &color) : 

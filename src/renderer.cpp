@@ -1,9 +1,12 @@
-#include <stdlib.h>
 #include <algorithm>
 #include <limits>
+#include <stdlib.h>
+#include <tuple>
 
-#include "renderer.h"
 #include "matrix.hpp"
+
+#include "shader.h"
+#include "renderer.h"
 
 Renderer::Renderer(Mat4f projection_mat, Mat4f view_mat) : fb(), projection(projection_mat), view(view_mat) {
     z_buf = new std::vector<float>(fb.Width() * fb.Height(), -std::numeric_limits<float>::max());
@@ -49,11 +52,11 @@ void Renderer::DrawLine(Vec4f v0, Vec4f v1, Color color) {
     DrawLine(v0.X(), v0.Y(), v1.X(), v1.Y(), color);
 }
 
-void Renderer::DrawTriangle(Vec4f v0, Vec4f v1, Vec4f v2, Vec3f uv0, Vec3f uv1, Vec3f uv2,
-        float lighting_intensity, TGAImage &tex) {
-    v0 = fb.ViewportMatrix() * v0;
-    v1 = fb.ViewportMatrix() * v1;
-    v2 = fb.ViewportMatrix() * v2;
+void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
+    const std::vector<FaceInfoIndices> &face_indices, const FaceInfo &face, TGAImage &tex) {
+    Vec4f v0 = fb.ViewportMatrix() * shader.Vertex(face.v0, face_indices, 0, mvp);
+    Vec4f v1 = fb.ViewportMatrix() * shader.Vertex(face.v1, face_indices, 1, mvp);
+    Vec4f v2 = fb.ViewportMatrix() * shader.Vertex(face.v2, face_indices, 2, mvp);
 
     float min_x = std::min(v0.X(), std::min(v1.X(), v2.X()));
     float min_y = std::min(v0.Y(), std::min(v1.Y(), v2.Y()));
@@ -75,7 +78,6 @@ void Renderer::DrawTriangle(Vec4f v0, Vec4f v1, Vec4f v2, Vec3f uv0, Vec3f uv1, 
                 continue;
 
             Vec3f barycentric = Vec3f(x, y).Barycentric(v0.To<Vec3f, 3>(), v1.To<Vec3f, 3>(), v2.To<Vec3f, 3>());
-
             if (barycentric.X() < 0 || barycentric.Y() < 0 || barycentric.Z() < 0) {
                 // If we are already drawing a triangle and we stepped out of it
                 // we won't be drawing it again on this line.
@@ -86,13 +88,12 @@ void Renderer::DrawTriangle(Vec4f v0, Vec4f v1, Vec4f v2, Vec3f uv0, Vec3f uv1, 
             }
             drawing_triangle = true;
 
-            float u = (barycentric.X() * uv0.X() + barycentric.Y() * uv1.X() + barycentric.Z() * uv2.X()) * 
-                tex.get_width();
-            float v = (barycentric.X() * uv0.Y() + barycentric.Y() * uv1.Y() + barycentric.Z() * uv2.Y()) *
-                tex.get_height();
+            bool should_render;
+            Color color;
+            std::tie(should_render, color) = shader.Fragment(barycentric, face, tex);
 
-            TGAColor tga_color = tex.get(u, v) * lighting_intensity;
-            Color color(tga_color);
+            if (!should_render)
+                continue;
 
             float z = barycentric.X() * v0.Z() + barycentric.Y() * v1.Z() + barycentric.Z() * v2.Z();
             int z_buf_index = ZBufIndex(x, y);
@@ -107,10 +108,12 @@ void Renderer::DrawTriangle(Vec4f v0, Vec4f v1, Vec4f v2, Vec3f uv0, Vec3f uv1, 
 void Renderer::DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat) {
     Mat4f mvp = projection * view * model_mat;
     Vec3f light_dir(0, 0, -1);
+    Shader shader;
 
     for (int i = 0; i < model.FaceCount(); i++) {
-        std::vector<FaceIndices> *face = model.Face(i);
+        DrawTriangle(model, shader, mvp, model.FaceIndices(i), model.Face(i), tex);
 
+        /*  
         Vec4f v0 = (model.Vert(face->operator[](0).vertex_index));
         Vec4f v1 = (model.Vert(face->operator[](1).vertex_index));
         Vec4f v2 = (model.Vert(face->operator[](2).vertex_index));
@@ -131,6 +134,7 @@ void Renderer::DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat) {
             continue;
 
         DrawTriangle(v0, v1, v2, uv0, uv1, uv2, lighting_intensity, tex);
+        */
     }
 }
 
