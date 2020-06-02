@@ -72,6 +72,8 @@ Model::Model(const char *filepath) {
 
 Model::~Model() {
     free(vertices);
+    free(uvs);
+    free(normals);
 
     for (int i = 0; i < (*faces)[i]->size(); i++) {
         free((*faces)[i]);
@@ -108,16 +110,16 @@ FaceInfo Model::Face(int index) const {
     std::vector<FaceInfoIndices> face_indices = FaceIndices(index);
 
     return FaceInfo {
-        .v0 = Vert(face_indices[0].vertex_index),
-        .v1 = Vert(face_indices[1].vertex_index),
-        .v2 = Vert(face_indices[2].vertex_index),
+        .v = {Vert(face_indices[0].vertex_index),
+              Vert(face_indices[1].vertex_index),
+              Vert(face_indices[2].vertex_index)},
 
-        .uv0 = Uv(face_indices[0].uv_index),
-        .uv1 = Uv(face_indices[1].uv_index),
-        .uv2 = Uv(face_indices[2].uv_index),
+        .uv = {Uv(face_indices[0].uv_index),
+               Uv(face_indices[1].uv_index),
+               Uv(face_indices[2].uv_index)},
 
-        .n0 = Normal(face_indices[0].uv_index),
-        .n1 = Normal(face_indices[1].uv_index),
-        .n2 = Normal(face_indices[2].uv_index)
+        .n = {Normal(face_indices[0].normal_index),
+              Normal(face_indices[1].normal_index),
+              Normal(face_indices[2].normal_index)}
     };
 }

@@ -12,9 +12,9 @@ typedef struct {
 } FaceInfoIndices;
 
 typedef struct {
-    Vec4f v0, v1, v2;
-    Vec3f uv0, uv1, uv2;
-    Vec3f n0, n1, n2;
+    Vec4f v[3];
+    Vec3f uv[3];
+    Vec3f n[3];
 } FaceInfo;
 
 class Model {
