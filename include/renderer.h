@@ -7,7 +7,7 @@
 #include "color.h"
 #include "framebuf.h"
 #include "model.h"
-#include "shader.h"
+#include "shaders/shader.h"
 #include "tgaimage.h"
 
 class Renderer {
@@ -24,9 +24,9 @@ private:
 public:
     Renderer(Mat4f projection_mat, Mat4f view_mat);
 
-    void DrawLine(Vec4f line_start, Vec4f line_end, Color color);
+    void DrawLine(Vec4f line_start, Vec4f line_end, Color color, const Mat4f &mvp);
     void DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
-        const std::vector<FaceInfoIndices> &face_indices, const FaceInfo &face, TGAImage &tex);
+        const FaceInfo &face, TGAImage &tex);
     void DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat);
 
     void DrawAxes();

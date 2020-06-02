@@ -5,7 +5,7 @@
 
 #include "matrix.hpp"
 
-#include "shader.h"
+#include "shaders/gouraud_shader.h"
 #include "renderer.h"
 
 Renderer::Renderer(Mat4f projection_mat, Mat4f view_mat) : fb(), projection(projection_mat), view(view_mat) {
@@ -45,18 +45,18 @@ void Renderer::DrawLine(int x0, int y0, int x1, int y1, Color color) {
     }
 }
 
-void Renderer::DrawLine(Vec4f v0, Vec4f v1, Color color) { 
-    v0 = fb.ViewportMatrix() * (projection * view * v0).ProjectTo3d();
-    v1 = fb.ViewportMatrix() * (projection * view * v1).ProjectTo3d();
+void Renderer::DrawLine(Vec4f v0, Vec4f v1, Color color, const Mat4f &mvp) { 
+    v0 = fb.ViewportMatrix() * (mvp * v0).ProjectTo3d();
+    v1 = fb.ViewportMatrix() * (mvp * v1).ProjectTo3d();
 
     DrawLine(v0.X(), v0.Y(), v1.X(), v1.Y(), color);
 }
 
 void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
-    const std::vector<FaceInfoIndices> &face_indices, const FaceInfo &face, TGAImage &tex) {
-    Vec4f v0 = fb.ViewportMatrix() * shader.Vertex(face.v0, face_indices, 0, mvp);
-    Vec4f v1 = fb.ViewportMatrix() * shader.Vertex(face.v1, face_indices, 1, mvp);
-    Vec4f v2 = fb.ViewportMatrix() * shader.Vertex(face.v2, face_indices, 2, mvp);
+    const FaceInfo &face, TGAImage &tex) {
+    Vec4f v0 = fb.ViewportMatrix() * shader.Vertex(face, 0, mvp).ProjectTo3d();
+    Vec4f v1 = fb.ViewportMatrix() * shader.Vertex(face, 1, mvp).ProjectTo3d();
+    Vec4f v2 = fb.ViewportMatrix() * shader.Vertex(face, 2, mvp).ProjectTo3d();
 
     float min_x = std::min(v0.X(), std::min(v1.X(), v2.X()));
     float min_y = std::min(v0.Y(), std::min(v1.Y(), v2.Y()));
@@ -107,39 +107,17 @@ void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp
 
 void Renderer::DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat) {
     Mat4f mvp = projection * view * model_mat;
-    Vec3f light_dir(0, 0, -1);
-    Shader shader;
+    Shader *shader = new GouraudShader(Vec3f(0, 0, 1));
 
-    for (int i = 0; i < model.FaceCount(); i++) {
-        DrawTriangle(model, shader, mvp, model.FaceIndices(i), model.Face(i), tex);
+    for (int i = 0; i < model.FaceCount(); i++)
+        DrawTriangle(model, *shader, mvp, model.Face(i), tex);
 
-        /*  
-        Vec4f v0 = (model.Vert(face->operator[](0).vertex_index));
-        Vec4f v1 = (model.Vert(face->operator[](1).vertex_index));
-        Vec4f v2 = (model.Vert(face->operator[](2).vertex_index));
-
-        v0 = (mvp * v0).ProjectTo3d();
-        v1 = (mvp * v1).ProjectTo3d();
-        v2 = (mvp * v2).ProjectTo3d();
-
-        Vec3f uv0 = model.Uv(face->operator[](0).uv_index);
-        Vec3f uv1 = model.Uv(face->operator[](1).uv_index);
-        Vec3f uv2 = model.Uv(face->operator[](2).uv_index);
-
-        // Simple lighting
-        Vec3f triangle_normal = (v2.To<Vec3f, 3>() - v0.To<Vec3f, 3>())
-            .Cross(v1.To<Vec3f, 3>() - v0.To<Vec3f, 3>()).Normalize();
-        float lighting_intensity = triangle_normal.Dot(light_dir);
-        if (lighting_intensity < 0) 
-            continue;
-
-        DrawTriangle(v0, v1, v2, uv0, uv1, uv2, lighting_intensity, tex);
-        */
-    }
+    delete shader;
 }
 
 void Renderer::DrawAxes() {
-    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0.25, 0, 0, 1), Color(255, 0, 0, 0));
-    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0.25, 0, 1), Color(0, 255, 0, 0));
-    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0, 0.25, 1), Color(0, 0, 255, 0));
+    Mat4f mvp = projection * view;
+    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0.25, 0, 0, 1), Color(255, 0, 0, 0), mvp);
+    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0.25, 0, 1), Color(0, 255, 0, 0), mvp);
+    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0, 0.25, 1), Color(0, 0, 255, 0), mvp);
 }
