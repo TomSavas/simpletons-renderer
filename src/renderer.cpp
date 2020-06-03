@@ -7,6 +7,7 @@
 
 #include "renderer.h"
 #include "shaders/gouraud_shader.h"
+#include "shaders/normal_tex_shader.h"
 #include "shaders/phong_shader.h"
 #include "shaders/shader.h"
 #include "shaders/toon_shader.h"
@@ -110,7 +111,7 @@ void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp
 
 void Renderer::DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tex, Mat4f model_mat) {
     Mat4f mvp = projection * view * model_mat;
-    Shader *shader = new PhongShader(&tex, Vec3f(0, 0, 1));
+    Shader *shader = new NormalTexShader(&tex, &normal_tex, Vec3f(0, 0, 1));
 
     for (int i = 0; i < model.FaceCount(); i++)
         DrawTriangle(model, *shader, mvp, model.Face(i), tex);
