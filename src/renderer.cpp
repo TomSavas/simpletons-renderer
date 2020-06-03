@@ -5,8 +5,10 @@
 
 #include "matrix.hpp"
 
-#include "shaders/gouraud_shader.h"
 #include "renderer.h"
+#include "shaders/gouraud_shader.h"
+#include "shaders/shader.h"
+#include "shaders/toon_shader.h"
 
 Renderer::Renderer(Mat4f projection_mat, Mat4f view_mat) : fb(), projection(projection_mat), view(view_mat) {
     z_buf = new std::vector<float>(fb.Width() * fb.Height(), -std::numeric_limits<float>::max());
@@ -90,7 +92,7 @@ void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp
 
             bool should_render;
             Color color;
-            std::tie(should_render, color) = shader.Fragment(barycentric, face, tex);
+            std::tie(should_render, color) = shader.Fragment(barycentric, face);
 
             if (!should_render)
                 continue;
@@ -105,9 +107,9 @@ void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp
     }
 }
 
-void Renderer::DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat) {
+void Renderer::DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tex, Mat4f model_mat) {
     Mat4f mvp = projection * view * model_mat;
-    Shader *shader = new GouraudShader(Vec3f(0, 0, 1));
+    Shader *shader = new GouraudShader(&tex, Vec3f(0, 0, 1));
 
     for (int i = 0; i < model.FaceCount(); i++)
         DrawTriangle(model, *shader, mvp, model.Face(i), tex);

@@ -2,13 +2,12 @@
 
 #include "shaders/toon_shader.h"
 
-ToonShader::ToonShader(Vec3f light_dir, Color color, int shade_count) :
-    GouraudShader(light_dir), color(color), shade_count(shade_count) {
+ToonShader::ToonShader(TGAImage *image, Vec3f light_dir, Color color, int shade_count) :
+    GouraudShader(image, light_dir), color(color), shade_count(shade_count) {
     intensity_per_shade = 1.0 / (shade_count - 1);
 }
 
-std::tuple<bool, Color> ToonShader::Fragment(const Vec3f &barycentric, const FaceInfo &face,
-    TGAImage &tex) {
+std::tuple<bool, Color> ToonShader::Fragment(const Vec3f &barycentric, const FaceInfo &face) {
     if (barycentric.X() < 0 || barycentric.Y() < 0 || barycentric.Z() < 0)
         return std::make_tuple(false, Color(0, 0, 0, 0));
 

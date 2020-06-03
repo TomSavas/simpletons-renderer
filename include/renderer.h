@@ -27,7 +27,7 @@ public:
     void DrawLine(Vec4f line_start, Vec4f line_end, Color color, const Mat4f &mvp);
     void DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
         const FaceInfo &face, TGAImage &tex);
-    void DrawModel(const Model &model, TGAImage &tex, Mat4f model_mat);
+    void DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tes, Mat4f model_mat);
 
     void DrawAxes();
 

@@ -11,12 +11,16 @@
 
 class Shader {
 protected:
+    TGAImage *tex;
+
     Vec2f Uv(const Vec3f &barycentric, const FaceInfo &face) const;
-    Vec2f Uv(const Vec3f &barycentric, const FaceInfo &face, TGAImage &tex) const;
+    Vec2f UvTexScaled(const Vec3f &barycentric, const FaceInfo &face) const;
 
 public:
+    Shader(TGAImage *tex);
+
     virtual Vec4f Vertex(const FaceInfo &face, int vertex_index, const Mat4f &mvp);
-    virtual std::tuple<bool, Color> Fragment(const Vec3f &barycentric, const FaceInfo &face, TGAImage &tex);
+    virtual std::tuple<bool, Color> Fragment(const Vec3f &barycentric, const FaceInfo &face);
 };
 
 #endif
