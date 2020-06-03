@@ -15,13 +15,10 @@ std::tuple<bool, Color> GouraudShader::Fragment(const Vec3f &barycentric, const 
     if (barycentric.X() < 0 || barycentric.Y() < 0 || barycentric.Z() < 0)
         return std::make_tuple(false, Color(0, 0, 0, 0));
 
-    float u = barycentric.X() * face.uv[0].X() + barycentric.Y() * face.uv[1].X() + barycentric.Z() * face.uv[2].X();
-    u = u * tex.get_width();
-    float v = barycentric.X() * face.uv[0].Y() + barycentric.Y() * face.uv[1].Y() + barycentric.Z() * face.uv[2].Y();
-    v = v * tex.get_height();
+    Vec2f uv = Uv(barycentric, face, tex);
 
     float intensity = intensities.Dot(barycentric);
-    TGAColor tex_color = tex.get(u, v) * intensity;
+    TGAColor tex_color = tex.get(uv.X(), uv.Y()) * intensity;
 
     return std::make_tuple(true, Color(tex_color));
 }
