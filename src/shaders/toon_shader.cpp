@@ -2,8 +2,8 @@
 
 #include "shaders/toon_shader.h"
 
-ToonShader::ToonShader(TGAImage *image, Vec3f light_dir, Color color, int shade_count) :
-    GouraudShader(image, light_dir), color(color), shade_count(shade_count) {
+ToonShader::ToonShader(TGAImage &image, const Mat4f &mvp, const Vec3f &light_dir, Color color,
+    int shade_count) : GouraudShader(image, mvp, light_dir), color(color), shade_count(shade_count) {
     intensity_per_shade = 1.0 / (shade_count - 1);
 }
 

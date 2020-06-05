@@ -7,11 +7,10 @@
 
 class NormalTexShader : public Shader {
 private:
-    TGAImage *normal_tex;
-    Vec3f light_dir;
+    TGAImage &normal_tex;
 
 public:
-    NormalTexShader(TGAImage *tex, TGAImage *normal_tex, Vec3f light_dir);
+    NormalTexShader(TGAImage &tex, TGAImage &normal_tex, const Mat4f &mvp, const Vec3f &light_dir);
 
     virtual std::tuple<bool, Color> Fragment(const Vec3f &barycentric,
         const FaceInfo &face) override;

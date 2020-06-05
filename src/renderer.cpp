@@ -6,6 +6,7 @@
 #include "matrix.hpp"
 
 #include "renderer.h"
+#include "shaders/flat_shader.h"
 #include "shaders/gouraud_shader.h"
 #include "shaders/normal_tex_shader.h"
 #include "shaders/phong_shader.h"
@@ -58,9 +59,9 @@ void Renderer::DrawLine(Vec4f v0, Vec4f v1, Color color, const Mat4f &mvp) {
 
 void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
     const FaceInfo &face, TGAImage &tex) {
-    Vec4f v0 = fb.ViewportMatrix() * shader.Vertex(face, 0, mvp).ProjectTo3d();
-    Vec4f v1 = fb.ViewportMatrix() * shader.Vertex(face, 1, mvp).ProjectTo3d();
-    Vec4f v2 = fb.ViewportMatrix() * shader.Vertex(face, 2, mvp).ProjectTo3d();
+    Vec4f v0 = fb.ViewportMatrix() * shader.Vertex(face, 0).ProjectTo3d();
+    Vec4f v1 = fb.ViewportMatrix() * shader.Vertex(face, 1).ProjectTo3d();
+    Vec4f v2 = fb.ViewportMatrix() * shader.Vertex(face, 2).ProjectTo3d();
 
     float min_x = std::min(v0.X(), std::min(v1.X(), v2.X()));
     float min_y = std::min(v0.Y(), std::min(v1.Y(), v2.Y()));
@@ -111,7 +112,14 @@ void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp
 
 void Renderer::DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tex, Mat4f model_mat) {
     Mat4f mvp = projection * view * model_mat;
-    Shader *shader = new NormalTexShader(&tex, &normal_tex, Vec3f(0, 0, 1));
+    Vec3f light_dir(1.5, 1, 1);
+
+    //Shader *shader = new FlatShader(tex, mvp, light_dir);
+    //Shader *shader = new GouraudShader(tex, mvp, light_dir);
+    Shader *shader = new NormalTexShader(tex, normal_tex, mvp, light_dir);
+    //Shader *shader = new PhongShader(tex, mvp, light_dir);
+    //Shader *shader = new Shader(tex, mvp, light_dir);
+    //Shader *shader = new ToonShader(tex, mvp, light_dir, Color(148, 98, 91), 5);
 
     for (int i = 0; i < model.FaceCount(); i++)
         DrawTriangle(model, *shader, mvp, model.Face(i), tex);
