@@ -8,6 +8,7 @@
 class NormalTexShader : public Shader {
 private:
     TGAImage &normal_tex;
+    Mat4f mvp_inverse_transpose;
 
 public:
     NormalTexShader(TGAImage &tex, TGAImage &normal_tex, const Mat4f &mvp, const Vec3f &light_dir);

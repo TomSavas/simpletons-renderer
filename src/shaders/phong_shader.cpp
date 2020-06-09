@@ -25,8 +25,7 @@ std::tuple<bool, Color> PhongShader::Fragment(const Vec3f &barycentric, const Fa
                  barycentric.X() * normals[0].Z() + barycentric.Y() * normals[1].Z() + barycentric.Z() * normals[2].Z());
 
     float intensity = normal.Dot(light_dir);
-    //TGAColor tex_color = tex.get(uv.X(), uv.Y()) * intensity;
-    TGAColor tex_color = TGAColor(255, 255, 255) * intensity;
+    TGAColor tex_color = tex.get(uv.X(), uv.Y()) * intensity;
 
     return std::make_tuple(true, Color(tex_color));
 }

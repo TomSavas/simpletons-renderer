@@ -16,24 +16,13 @@ Vec2f Shader::UvTexScaled(const Vec3f &barycentric, const FaceInfo &face) const 
     return uv;
 }
 
-void Shader::Mvp(const Mat4f &mvp) {
-    this->mvp = mvp;
-
-    CalcLightDir();
-}
-
-void Shader::LightDir(const Vec3f &light_dir) {
-    original_light_dir = light_dir.Normalize();
-
-    CalcLightDir();
-}
-
 void Shader::CalcLightDir() {
     light_dir = (mvp * original_light_dir.To<Vec4f, 4>()).ProjectTo3d().To<Vec3f, 3>().Normalize();
 }
 
-Shader::Shader(TGAImage &tex, const Mat4f &mvp, const Vec3f &light_dir) : tex(tex), mvp(mvp) {
-    LightDir(light_dir);
+Shader::Shader(TGAImage &tex, const Mat4f &mvp, const Vec3f &light_dir) : tex(tex), mvp(mvp),
+    original_light_dir(light_dir) {
+    CalcLightDir();
 }
 
 // Just apply MVP by default

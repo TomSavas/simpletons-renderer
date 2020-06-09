@@ -6,6 +6,7 @@
 class PhongShader : public Shader {
 protected:
     Vec3f normals[3];
+
 public:
     PhongShader(TGAImage &tex, const Mat4f &mvp, const Vec3f &light_dir);
 

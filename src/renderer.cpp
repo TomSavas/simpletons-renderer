@@ -13,7 +13,9 @@
 #include "shaders/shader.h"
 #include "shaders/toon_shader.h"
 
-Renderer::Renderer(Mat4f projection_mat, Mat4f view_mat) : fb(), projection(projection_mat), view(view_mat) {
+Renderer::Renderer(const Mat4f &projection_mat, const Mat4f &view_mat, const Vec3f &camera_pos,
+    const Vec3f &light_dir) : fb(), projection(projection_mat), view(view_mat),
+    camera_pos(camera_pos), light_dir(light_dir) {
     z_buf = new std::vector<float>(fb.Width() * fb.Height(), -std::numeric_limits<float>::max());
 }
 
@@ -50,15 +52,15 @@ void Renderer::DrawLine(int x0, int y0, int x1, int y1, Color color) {
     }
 }
 
-void Renderer::DrawLine(Vec4f v0, Vec4f v1, Color color, const Mat4f &mvp) { 
-    v0 = fb.ViewportMatrix() * (mvp * v0).ProjectTo3d();
-    v1 = fb.ViewportMatrix() * (mvp * v1).ProjectTo3d();
+void Renderer::DrawLine(Vec4f v0, Vec4f v1, Color color) { 
+    v0 = fb.ViewportMatrix() * (projection * view * v0).ProjectTo3d();
+    v1 = fb.ViewportMatrix() * (projection * view * v1).ProjectTo3d();
 
     DrawLine(v0.X(), v0.Y(), v1.X(), v1.Y(), color);
 }
 
-void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp,
-    const FaceInfo &face, TGAImage &tex) {
+void Renderer::DrawTriangle(const Model &model, Shader &shader, const FaceInfo &face,
+    TGAImage &tex) {
     Vec4f v0 = fb.ViewportMatrix() * shader.Vertex(face, 0).ProjectTo3d();
     Vec4f v1 = fb.ViewportMatrix() * shader.Vertex(face, 1).ProjectTo3d();
     Vec4f v2 = fb.ViewportMatrix() * shader.Vertex(face, 2).ProjectTo3d();
@@ -110,26 +112,24 @@ void Renderer::DrawTriangle(const Model &model, Shader &shader, const Mat4f &mvp
     }
 }
 
-void Renderer::DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tex, Mat4f model_mat) {
+void Renderer::DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tex, const Mat4f &model_mat) {
     Mat4f mvp = projection * view * model_mat;
-    Vec3f light_dir(1.5, 1, 1);
 
     //Shader *shader = new FlatShader(tex, mvp, light_dir);
     //Shader *shader = new GouraudShader(tex, mvp, light_dir);
-    Shader *shader = new NormalTexShader(tex, normal_tex, mvp, light_dir);
-    //Shader *shader = new PhongShader(tex, mvp, light_dir);
+    //Shader *shader = new NormalTexShader(tex, normal_tex, mvp, light_dir);
+    Shader *shader = new PhongShader(tex, mvp, light_dir);
     //Shader *shader = new Shader(tex, mvp, light_dir);
     //Shader *shader = new ToonShader(tex, mvp, light_dir, Color(148, 98, 91), 5);
 
     for (int i = 0; i < model.FaceCount(); i++)
-        DrawTriangle(model, *shader, mvp, model.Face(i), tex);
+        DrawTriangle(model, *shader, model.Face(i), tex);
 
     delete shader;
 }
 
 void Renderer::DrawAxes() {
-    Mat4f mvp = projection * view;
-    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0.25, 0, 0, 1), Color(255, 0, 0, 0), mvp);
-    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0.25, 0, 1), Color(0, 255, 0, 0), mvp);
-    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0, 0.25, 1), Color(0, 0, 255, 0), mvp);
+    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0.25, 0, 0, 1), Color(255, 0, 0, 0));
+    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0.25, 0, 1), Color(0, 255, 0, 0));
+    DrawLine(Vec4f(0, 0, 0, 1), Vec4f(0, 0, 0.25, 1), Color(0, 0, 255, 0));
 }
