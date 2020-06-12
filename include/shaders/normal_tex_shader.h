@@ -6,7 +6,7 @@
 #include "vec.hpp"
 
 class NormalTexShader : public Shader {
-private:
+protected:
     TGAImage &normal_tex;
     Mat4f mvp_inverse_transpose;
 

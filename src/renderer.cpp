@@ -12,6 +12,7 @@
 #include "shaders/phong_shader.h"
 #include "shaders/shader.h"
 #include "shaders/toon_shader.h"
+#include "shaders/tangent_normal_tex_shader.h"
 
 Renderer::Renderer(const Mat4f &projection_mat, const Mat4f &view_mat, const Vec3f &camera_pos,
     const Vec3f &light_dir) : fb(), projection(projection_mat), view(view_mat),
@@ -118,9 +119,10 @@ void Renderer::DrawModel(const Model &model, TGAImage &tex, TGAImage &normal_tex
     //Shader *shader = new FlatShader(tex, mvp, light_dir);
     //Shader *shader = new GouraudShader(tex, mvp, light_dir);
     //Shader *shader = new NormalTexShader(tex, normal_tex, mvp, light_dir);
-    Shader *shader = new PhongShader(tex, mvp, light_dir);
+    //Shader *shader = new PhongShader(tex, mvp, light_dir);
     //Shader *shader = new Shader(tex, mvp, light_dir);
     //Shader *shader = new ToonShader(tex, mvp, light_dir, Color(148, 98, 91), 5);
+    Shader *shader = new TangentNormalTexShader(tex, normal_tex, mvp, light_dir);
 
     for (int i = 0; i < model.FaceCount(); i++)
         DrawTriangle(model, *shader, model.Face(i), tex);

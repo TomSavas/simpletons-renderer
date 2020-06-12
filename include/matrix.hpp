@@ -202,5 +202,6 @@ struct Dt<3> {
 };
 
 using Mat4f = Matrix<4, 4>;
+using Mat3f = Matrix<3, 3>;
 
 #endif
