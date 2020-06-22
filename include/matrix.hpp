@@ -9,7 +9,7 @@
 template<int Y_DIM, int X_DIM> class Matrix;
 
 template<int DIM>
-struct Dt {
+struct Det {
     static float Determinant(const Matrix<DIM, DIM> *mat);
 };
 
@@ -54,7 +54,7 @@ public:
     float Determinant() const {
         static_assert(Y_DIM == X_DIM, "Can only calculate determinant of a square matrix");
 
-        return Dt<Y_DIM>::Determinant(this);
+        return Det<Y_DIM>::Determinant(this);
     }
 
     Matrix<Y_DIM, X_DIM> CofactorMatrix() const {
@@ -173,7 +173,7 @@ public:
 };
 
 template<int DIM>
-float Dt<DIM>::Determinant(const Matrix<DIM, DIM> *mat) {
+float Det<DIM>::Determinant(const Matrix<DIM, DIM> *mat) {
     float determinant = 0;
     for (int i = 0; i < DIM; i++)
         determinant += mat->operator[](0)[i] * mat->Cofactor(0, i);
@@ -182,14 +182,14 @@ float Dt<DIM>::Determinant(const Matrix<DIM, DIM> *mat) {
 }
 
 template<>
-struct Dt<2> {
+struct Det<2> {
     static float Determinant(const Matrix<2, 2> *mat) {
         return mat->operator[](0)[0] * mat->operator[](1)[1] - mat->operator[](0)[1] * mat->operator[](1)[0];
     }
 };
 
 template<>
-struct Dt<3> {
+struct Det<3> {
     static float Determinant(const Matrix<3, 3> *mat) {
         return mat->operator[](0)[0] * mat->operator[](1)[1] * mat->operator[](2)[2] + 
                 mat->operator[](0)[1] * mat->operator[](1)[2] * mat->operator[](2)[0] +
