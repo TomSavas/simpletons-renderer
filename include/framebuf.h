@@ -3,19 +3,17 @@
 
 #include <linux/fb.h>
 
-#include "matrix.hpp"
-
-#include "color.h"
+#include "iframebuf.h"
 
 #define FB_ERR_PREFIX "FRAMEBUF ERROR"
 
-class Framebuf {
+class Framebuf : public IFramebuf {
 private:
     int fd = -1;
     char* fb = (char*) -1;
     struct fb_var_screeninfo var_info;
     struct fb_fix_screeninfo fix_info;
-    int size;
+    int size_in_bytes;
     Mat4f viewport_matrix;
 
     bool flip_y = true;
@@ -29,17 +27,18 @@ public:
     Framebuf();
     ~Framebuf();
 
-    int Index(int x, int y) const;
-    int Width() const;
-    int Height() const;
-    const Mat4f &ViewportMatrix() const;
+    int Index(int x, int y) const override;
+    int Width() const override;
+    int Height() const override;
+    int Size() const override;
+    const Mat4f &ViewportMatrix() const override;
 
-    char *&Fb();
-    void FlipY(bool flip);
-    void Set(int x, int y, Color color);
-    void Clear(Color color = Color(0, 0, 0, 0));
+    void Set(int x, int y, Color color) override;
+    void Clear(Color color = Color(0, 0, 0, 0)) override;
 
-    char& operator[](int index);
+    void FlipY(bool flip) override;
+
+    char& operator[](int index) override;
 };
 
 #endif
