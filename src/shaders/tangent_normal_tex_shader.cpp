@@ -1,7 +1,9 @@
 #include "shaders/tangent_normal_tex_shader.h"
 
-TangentNormalTexShader::TangentNormalTexShader(TGAImage &tex, TGAImage &normal_tex, const Mat4f &mvp,
-    const Vec3f &light_dir) : NormalTexShader(tex, normal_tex, mvp, light_dir) {}
+TangentNormalTexShader::TangentNormalTexShader(TGAImage &tex, const Mat4f &mvp,
+    const Mat4f &camera_viewport_to_shadow_viewport, const Vec3f &light_dir,
+    const IFramebuf &framebuf, const std::vector<float> &shadow_buf, TGAImage &normal_tex) : 
+    NormalTexShader(tex, mvp, camera_viewport_to_shadow_viewport, light_dir, framebuf, shadow_buf, normal_tex) {}
 
 Vec4f TangentNormalTexShader::Vertex(const FaceInfo &face, int vertex_index) {
     if (vertex_index != 0)
@@ -22,19 +24,13 @@ Vec4f TangentNormalTexShader::Vertex(const FaceInfo &face, int vertex_index) {
     basis_equation_coeffs[2][1] = 0;
     basis_equation_coeffs[2][2] = 0;
 
-    return Shader::Vertex(face, vertex_index);
+    return NormalTexShader::Vertex(face, vertex_index);
 }
 
-std::tuple<bool, Color> TangentNormalTexShader::Fragment(const Vec3f &barycentric, const FaceInfo &face) {
-    if (barycentric.X() < 0 || barycentric.Y() < 0 || barycentric.Z() < 0)
-        return std::make_tuple(false, Color(0, 0, 0, 0));
+std::tuple<bool, Color> TangentNormalTexShader::Fragment(const Bary3f &barycentric, const FaceInfo &face) {
+    Vec2f uv = Uv(barycentric, face);
 
-    Vec2f uv = UvTexScaled(barycentric, face);
-
-    Vec3f normal(barycentric.X() * face.n[0].X() + barycentric.Y() * face.n[1].X() + barycentric.Z() * face.n[2].X(),
-                 barycentric.X() * face.n[0].Y() + barycentric.Y() * face.n[1].Y() + barycentric.Z() * face.n[2].Y(),
-                 barycentric.X() * face.n[0].Z() + barycentric.Y() * face.n[1].Z() + barycentric.Z() * face.n[2].Z());
-
+    Vec3f normal = barycentric.ApplyOn(face.n);
     normal = (mvp_inverse_transpose * normal.To<Vec4f, 4>()).To<Vec3f, 3>().Normalize();
 
     basis_equation_coeffs[2][0] = normal.X();
@@ -67,7 +63,7 @@ std::tuple<bool, Color> TangentNormalTexShader::Fragment(const Vec3f &barycentri
     normal_from_tex = normal_from_tex.Normalize();
     normal = (tangent_space_transform * normal_from_tex).Normalize();
 
-    float intensity = normal.Dot(light_dir);
+    float intensity = normal.Dot(-light_dir_in_camera_space) - HardShadowIntensity(barycentric);
 
     TGAColor tex_color = tex.get(uv.X(), uv.Y()) * intensity;
     return std::make_tuple(true, Color(tex_color));
