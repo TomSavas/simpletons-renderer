@@ -13,10 +13,11 @@ also need to run it with sudo as it mmaps `/dev/fb0`.
 
 ## Todos
 - I tanked the performance after rewriting the vectors 
-  + Maybe do some profiling? 
   + Potentially make them mutable to save on the amount of objects created?
   + Try to change the vector implementation to not use CRTP although I have no 
     idea why that would improve anything.
+- Add specular maps
+- Add emission maps
 
 ## License
 This project is licensed under MIT License - see [LICENSE](LICENSE) file for details.
