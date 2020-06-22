@@ -149,6 +149,9 @@ public:
 };
 
 template<typename T>
+class BarycentricCoords3;
+
+template<typename T>
 class Vec3 : public VecBase<Vec3<T>, 3, T> {
 public:
     Vec3(T values[3]) : VecBase<Vec3<T>, 3, T>(values) {}
@@ -173,15 +176,15 @@ public:
     //
     // Coordinates are [1-u-v, u, v] where
     // p = (1-u-v)a + u*b + v*c
-    Vec3<T> Barycentric(const Vec3<T> &a, const Vec3<T> &b, const Vec3<T> &c) const {
+    BarycentricCoords3<T> Barycentric(const Vec3<T> &a, const Vec3<T> &b, const Vec3<T> &c) const {
         Vec3<T> pa = a - *this;
         Vec3<T> ab = b - a;
         Vec3<T> ac = c - a;
 
         // [u, v, 1]
-        Vec3<T> barycentric = Vec3<T>(ab.X(), ac.X(), pa.X()).Cross(Vec3<T>(ab.Y(), ac.Y(), pa.Y()));
+        Vec3<T> barycentric = Vec3(ab.X(), ac.X(), pa.X()).Cross(Vec3<T>(ab.Y(), ac.Y(), pa.Y()));
 
-        return Vec3<T>(1.0 - (barycentric.X() + barycentric.Y()) / barycentric.Z(),
+        return BarycentricCoords3<T>(1.0 - (barycentric.X() + barycentric.Y()) / barycentric.Z(),
                 barycentric.X() / barycentric.Z(),
                 barycentric.Y() / barycentric.Z());
     }
@@ -190,6 +193,43 @@ public:
         return Vec3(Y() * rhs.Z() - Z() * rhs.Y(),
             Z() * rhs.X() - X() * rhs.Z(),
             X() * rhs.Y() - Y() * rhs.X());
+    }
+
+};
+
+template<typename T>
+class BarycentricCoords3 : public Vec3<T> {
+public:
+    BarycentricCoords3(T values[3]) : Vec3<T>(values) {}
+
+    BarycentricCoords3(T x = 0, T y = 0, T z = 0) : Vec3<T>(x, y, z) {}
+
+    template<typename TVecImpl, int N>
+    TVecImpl ApplyOn(const VecBase<TVecImpl, N, T> &a, const VecBase<TVecImpl, N, T> &b, const VecBase<TVecImpl, N, T> &c) const {
+        TVecImpl result_vec;
+
+        for (int i = 0; i < N; i++)
+            result_vec[i] = this->X() * a[i] + this->Y() * b[i] + this->Z() * c[i];
+
+        return result_vec;
+    }
+
+    template<typename TVecImpl, int N>
+    TVecImpl ApplyOn(const VecBase<TVecImpl, N, T> vecs[3]) const {
+        return ApplyOn<TVecImpl, N>(vecs[0], vecs[1], vecs[2]);
+    }
+    //Vec3<T> ApplyOn(const Vec3<T> &a, const Vec3<T> &b, const Vec3<T> &c) const {
+    //    return Vec3<T>(this->X() * a.X() + this->Y() * b.X() + this->Z() * c.X(),
+    //                this->X() * a.Y() + this->Y() * b.Y() + this->Z() * c.Y(),
+    //                this->X() * a.Z() + this->Y() * b.Z() + this->Z() * c.Z());
+    //}
+
+    //Vec3<T> ApplyOn(Vec3<T> vecs[3]) const {
+    //    return ApplyOn(vecs[0], vecs[1], vecs[2]);
+    //}
+
+    bool IsInsideTriangle() const {
+        return this->X() >= 0 && this->Y() >= 0 && this->Z() >= 0;
     }
 };
 
@@ -225,5 +265,7 @@ public:
 using Vec2f = Vec2<float>;
 using Vec3f = Vec3<float>;
 using Vec4f = Vec4<float>;
+
+using Bary3f = BarycentricCoords3<float>;
 
 #endif
