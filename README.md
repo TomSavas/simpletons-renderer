@@ -5,6 +5,10 @@ This is basically just me following
 `tgaimage` and (most of) `model` implementations are taken directly from that repo.
 I plan on redoing the model myself sometime later.
 
+## Renders
+![render preview](renders/preview1.png)
+Model does not belong to me, nor do I have the permission to redistribute it, however [this guy can](https://github.com/ssloy/tinyrenderer/tree/master/obj/diablo3_pose).
+
 ## Running
 This is written with Linux in mind, so it will not work on Windows and most likely
 MacOS. The application draws directly on the framebuffer, so you'll need to switch
